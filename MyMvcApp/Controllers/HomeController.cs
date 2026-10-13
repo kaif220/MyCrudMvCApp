@@ -1,25 +1,64 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using MyMvcApp.Models;
 
 namespace MyMvcApp.Controllers
 {
-    public class HomeController : Controller
+    [ApiController]
+    [Route("api/[controller]")]
+    public class ProductController : ControllerBase
     {
-        public IActionResult Index()
+        private static List<Product> products = new()
         {
-            return View();
+            new Product { Id = 1, Name = "Laptop", Price = 50000 }
+        };
+
+        // READ - GET
+        [HttpGet]
+        public IActionResult GetAll()
+        {
+            return Ok(products);
         }
 
-        public IActionResult Privacy()
+        // READ by ID
+        [HttpGet("{id}")]
+        public IActionResult GetById(int id)
         {
-            return View();
+            var product = products.FirstOrDefault(x => x.Id == id);
+            if (product == null) return NotFound();
+            return Ok(product);
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        // CREATE - POST
+        [HttpPost]
+        public IActionResult Create(Product product)
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            product.Id = products.Max(x => x.Id) + 1;
+            products.Add(product);
+            return Ok(product);
+        }
+
+        // UPDATE - PUT
+        [HttpPut("{id}")]
+        public IActionResult Update(int id, Product product)
+        {
+            var existing = products.FirstOrDefault(x => x.Id == id);
+            if (existing == null) return NotFound();
+
+            existing.Name = product.Name;
+            existing.Price = product.Price;
+
+            return Ok(existing);
+        }
+
+        // DELETE - DELETE
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            var product = products.FirstOrDefault(x => x.Id == id);
+            if (product == null) return NotFound();
+
+            products.Remove(product);
+            return Ok("Deleted Successfully");
         }
     }
 }
